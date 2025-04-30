@@ -1,16 +1,26 @@
-# Wazo SMTP Setup Script
+# Wazo Config Setup
 
-This script sets up Postfix relay configuration for Wazo (XiVO) with Office365 SMTP.
+This repository provides automation scripts to configure:
+- Postfix SMTP Relay with Office365
+- APNS settings for Wazo Mobile Push
+- Caller ID rules update in Asterisk
+- (Optional) SSL setup for Wazo with Certbot & Nginx
 
-## 🔧 Features
-- Creates required directory structure in `/etc/xivo/custom-templates/`
-- Adds `sender_relay` and `sasl_passwd`
-- Copies and appends to `main.cf`
-- Runs `postmap` and `xivo-update-config`
+---
 
-## 🚀 Usage
+## 🔧 Script 1: `postinstall_config.sh`
+
+This script configures:
+
+- Outbound SMTP relay using Office365
+- APNS push topics for iOS calling via Wazo
+- Updates `xivo_in_callerid.conf` to adjust international call handling
+
+### 📥 Usage
+
+Run the following commands on your **Debian 11+** Wazo system:
 
 ```bash
-wget https://raw.githubusercontent.com/bilalsarfraz1606/wazo-smtp/main/postfix_config.sh
-chmod +x postfix_config.sh
-sudo ./postfix_config.sh
+wget https://raw.githubusercontent.com/bilalsarfraz1606/wazo_config/main/postinstall_config.sh
+chmod +x postinstall_config.sh
+sudo ./postinstall_config.sh
