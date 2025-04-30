@@ -4,6 +4,7 @@ TARGET_DIR="/etc/xivo/custom-templates/postfix/etc/postfix"
 MAIN_CF_SOURCE="/usr/share/xivo-config/templates/mail/etc/postfix/main.cf"
 MAIN_CF_DEST="$TARGET_DIR/main.cf"
 WEBHOOK_CONFIG="/etc/wazo-webhookd/conf.d/40-whitelabel.yml"
+CALLERID_FILE="/etc/xivo/asterisk/xivo_in_callerid.conf"
 
 echo "🔧 Creating directory structure..."
 mkdir -p "$TARGET_DIR" || { echo "❌ Failed to create directory: $TARGET_DIR"; exit 1; }
@@ -42,4 +43,12 @@ EOF
 echo "🔁 Restarting wazo-webhookd..."
 systemctl restart wazo-webhookd || { echo "❌ Failed to restart wazo-webhookd"; exit 1; }
 
-echo "✅ Postfix + APNS setup completed successfully."
+echo "🛠️ Modifying $CALLERID_FILE..."
+if grep -q "^\[international3\]" "$CALLERID_FILE"; then
+  sed -i '/^\[international3\]/,/^\[/ s/^add *=.*/add =/' "$CALLERID_FILE"
+  echo "✅ Updated 'add' line in [international3] section."
+else
+  echo "⚠️ [international3] section not found in $CALLERID_FILE"
+fi
+
+echo "✅ Postfix + APNS + CallerID config completed successfully."
