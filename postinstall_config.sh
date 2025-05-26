@@ -22,8 +22,19 @@ chown root:root "$TARGET_DIR/sasl_passwd" || exit 1
 echo "📋 Copying main.cf..."
 cp "$MAIN_CF_SOURCE" "$MAIN_CF_DEST" || exit 1
 
-echo "➕ Appending smtp_tls_security_level..."
-echo "smtp_tls_security_level = encrypt" >> "$MAIN_CF_DEST"
+echo "📦 Configuring main.cf for Office365 relay..."
+cat >> "$MAIN_CF_DEST" <<EOF
+
+# Relay configuration
+relayhost = [smtp.office365.com]:587
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options = noanonymous
+smtp_tls_security_level = encrypt
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+sender_dependent_relayhost_maps = hash:/etc/postfix/sender_relay
+smtp_sender_dependent_authentication = yes
+EOF
 
 echo "🔁 Running postmap..."
 cd "$TARGET_DIR" || exit 1
@@ -32,6 +43,12 @@ postmap sender_relay || exit 1
 
 echo "🔄 Updating config with xivo-update-config..."
 xivo-update-config || exit 1
+
+echo "📄 Copying hashed maps to /etc/postfix for active config..."
+cp "$TARGET_DIR/sasl_passwd" /etc/postfix/sasl_passwd
+cp "$TARGET_DIR/sasl_passwd.db" /etc/postfix/sasl_passwd.db
+cp "$TARGET_DIR/sender_relay" /etc/postfix/sender_relay
+cp "$TARGET_DIR/sender_relay.db" /etc/postfix/sender_relay.db
 
 echo "📦 Writing APNS config..."
 mkdir -p "$(dirname "$WEBHOOK_CONFIG")"
