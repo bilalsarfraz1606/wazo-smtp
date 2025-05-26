@@ -19,6 +19,11 @@ echo "🔒 Setting permissions..."
 chmod 600 "$TARGET_DIR/sasl_passwd" || exit 1
 chown root:root "$TARGET_DIR/sasl_passwd" || exit 1
 
+echo "➕ Ensuring smtp_tls_security_level is set in main.cf template..."
+grep -q "^smtp_tls_security_level" "$MAIN_CF_SOURCE" \
+  && sed -i 's/^smtp_tls_security_level.*/smtp_tls_security_level = encrypt/' "$MAIN_CF_SOURCE" \
+  || echo "smtp_tls_security_level = encrypt" >> "$MAIN_CF_SOURCE"
+
 echo "📋 Copying main.cf..."
 cp "$MAIN_CF_SOURCE" "$MAIN_CF_DEST" || exit 1
 
